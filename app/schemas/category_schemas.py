@@ -1,0 +1,25 @@
+from pydantic_settings import BaseSettings
+from pydantic import BaseModel, Field
+
+
+
+class CategoryBase(BaseModel):
+    name: str = Field(min_length=2, max_length=50)
+    description: str = Field(min_length=2, max_length=255)
+
+
+class CategoryCreate(CategoryBase):
+    pass
+
+
+class CategoryUpdate(BaseModel):
+    name: str|None = Field(default=None, min_length=2, max_length=50)
+    description: str|None = Field(default=None, min_length=2, max_length=255)
+
+
+class CategoryResponse(CategoryBase):
+    id: int
+
+    model_config = {
+        "from_attributes": True
+    }
