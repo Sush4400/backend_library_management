@@ -1,17 +1,19 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
+from decimal import Decimal
+
 
 
 class FineBase(BaseModel):
-    pass
-
-
-class FineCreate(FineBase):
-    pass
-
-
-class FineUpdate(BaseModel):
-    pass
+    loan_id: int
+    amount: Decimal = Field(ge=0)
 
 
 class FineResponse(FineBase):
-    pass
+    id: int
+    paid: bool
+    paid_at: datetime|None = None
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )

@@ -1,17 +1,31 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict
+from datetime import datetime
+from app.models.loan import LoanStatus
+
 
 
 class LoanBase(BaseModel):
-    pass
-
+    book_id: int
+    member_id: int
+    
 
 class LoanCreate(LoanBase):
-    pass
+    due_date: datetime
 
 
-class LoanUpdate(BaseModel):
-    pass
+class LoanReturn(BaseModel):
+    returned_at: datetime|None = None
 
 
 class LoanResponse(LoanBase):
-    pass
+    id: int
+    book_id: int
+    member_id: int
+    issued_at: datetime
+    due_date: datetime
+    returned_at: datetime|None
+    status = LoanStatus
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
