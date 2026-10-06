@@ -55,41 +55,7 @@ def update_book(db: Session, book_id: int, data: BookUpdate):
     update_data = data.model_dump(exclude_unset=True)
     if "isbn" in update_data:
         existing_book = book_dao.get_book_by_isbn(db, update_data["isbn"])
-        
-
-
-def delete_book(db: Session, book_id: int):
-    book = get_book(db, book_id)
-    return book_dao.delete_book(db, book)
-
-
-
-
-
-def update_book(
-    db: Session,
-    book_id: int,
-    data: BookUpdate
-) -> Book:
-
-    book = get_book(db, book_id)
-
-    update_data = data.model_dump(
-        exclude_unset=True
-    )
-
-    # Check duplicate ISBN
-    if "isbn" in update_data:
-
-        existing_book = book_dao.get_book_by_isbn(
-            db,
-            update_data["isbn"]
-        )
-
-        if (
-            existing_book
-            and existing_book.id != book.id
-        ):
+        if existing_book and existing_book.id != book.id:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="ISBN already registered."
@@ -97,29 +63,17 @@ def update_book(
 
     # Handle total copies
     if "total_copies" in update_data:
-
         new_total = update_data["total_copies"]
-
-        borrowed_copies = (
-            book.total_copies -
-            book.available_copies
-        )
-
+        borrowed_copies = book.total_copies-book.available_copies
         if new_total < borrowed_copies:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=(
-                    "Total copies cannot be less than "
-                    "the number of borrowed copies."
-                )
+                detail="Total copies can't be less than the number of borrowed copies"
             )
+        update_data["available_copies"] = new_total-borrowed_copies
+    return book_dao.update_book(db, book, update_data)
 
-        update_data["available_copies"] = (
-            new_total - borrowed_copies
-        )
 
-    return book_dao.update_book(
-        db,
-        book,
-        update_data
-    )
+def delete_book(db: Session, book_id: int):
+    book = get_book(db, book_id)
+    return book_dao.delete_book(db, book)
